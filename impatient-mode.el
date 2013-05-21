@@ -59,17 +59,20 @@
 (defvar imp-related-files nil
   "Files that seem to be related to this buffer")
 
+(defvar imp-format 0)
+(defvar imp-format-text 0)
+(defvar imp-format-markdown 1)
+(defvar imp-format-html 2)
+
 ;;;###autoload
 (define-minor-mode impatient-mode
   "Serves the buffer live over HTTP."
   :group 'impatient-mode
   :lighter " imp"
   :keymap impatient-mode-map
-  (make-local-variable 'imp-htmlize-filter)
   (make-local-variable 'imp-client-list)
   (make-local-variable 'imp-last-state)
   (make-local-variable 'imp-related-files)
-  (setq imp-htmlize-filter (not (eq major-mode 'html-mode)))
   (if impatient-mode
       (add-hook 'after-change-functions 'imp--on-change nil t)
     (remove-hook 'after-change-functions 'imp--on-change t)))
@@ -77,11 +80,26 @@
 (defvar imp-shim-root (file-name-directory load-file-name)
   "Location of data files needed by impatient-mode.")
 
-(defun imp-toggle-htmlize ()
-  "Toggle htmlization of this buffer before sending to clients."
+;;;###autoload
+(defun imp-toggle (&optional the-format)
+  "Toggle format of this buffer "
   (interactive)
-  (setq imp-htmlize-filter (not imp-htmlize-filter))
+  (if the-format
+      (setq imp-format the-format)
+    (setq imp-format (mod (incf imp-format) 3)))
   (imp--notify-clients))
+
+(defun imp-html-file ()
+  (interactive)
+  (imp-toggle imp-format-html))
+
+(defun imp-text-file ()
+  (interactive)
+  (imp-toggle imp-format-text))
+
+(defun imp-markdown-file ()
+  (interactive)
+  (imp-toggle imp-format-markdown))
 
 (defun imp-visit-buffer ()
   "Visit the buffer in a browser."
@@ -171,11 +189,10 @@
 
 (defun imp--send-state (proc)
   (let ((id (number-to-string imp-last-state))
-        (htmlize imp-htmlize-filter)
         (buffer (current-buffer)))
     (with-temp-buffer
-      (insert id " ")
-      (if htmlize
+      (insert id " " (number-to-string imp-format))
+      (if (= imp-format imp-format-text)
           (let ((pretty-buffer (htmlize-buffer buffer)))
             (insert-buffer-substring pretty-buffer)
             (kill-buffer pretty-buffer))

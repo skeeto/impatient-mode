@@ -1,7 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <script type="text/javascript" src="/imp/static/jquery.js"></script>
-
+    <script type="text/javascript" src="/imp/static/showdown.min.js"></script>
     <style type="text/css">
       html {
         overflow: auto;
@@ -27,6 +27,11 @@
     </iframe>
 
     <script type="text/javascript">
+      /* format */
+      var text = "0";
+      var markdown = "1";
+      var html = "2";
+
       var buffer = window.location.pathname.split('/')[3];
       var max_period = 60000;
       var min_period = 1000;
@@ -44,7 +49,7 @@
       var resetTimeout = function() {
         next_period = min_period;
       };
-      
+
       var frameToDocument = function(iframe) {
         return (iframe.contentDocument) ? iframe.contentDocument : iframe.Document;
       };
@@ -70,7 +75,12 @@
           printIframe('error parsing the response from emacs');
         } else {
           current_id = newText.substr(0, spaceIdx);
-          var html_string = newText.substr(spaceIdx + 1);
+          var type = newText.substr(spaceIdx + 1, 1);
+          var html_string = newText.substr(spaceIdx + 2);
+          if (type == markdown) {
+               var converter = new Showdown.converter();
+               var html_string = converter.makeHtml(html_string);
+          }
           printIframe(html_string);
           lastText = newText;
         }

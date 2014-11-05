@@ -180,6 +180,7 @@ buffer."
      ((not (imp-buffer-enabled-p buffer)) (imp--private proc buffer-name))
      ((and (not (string= file "./")) buffer-dir)
       (let* ((full-file-name (expand-file-name file buffer-dir))
+             (mime-type (httpd-get-mime (file-name-extension full-file-name)))
              (live-buffer (cl-remove-if-not
                            (lambda (buf) (equal full-file-name (buffer-file-name buf)))
                            (imp--buffer-list))))
@@ -188,9 +189,9 @@ buffer."
             (with-temp-buffer
               (insert-buffer-substring (cl-first live-buffer))
               (if (imp--should-not-cache-p path)
-                  (httpd-send-header proc "text/plain" 200
+                  (httpd-send-header proc mime-type 200
                                      :Cache-Control "no-cache")
-                (httpd-send-header proc "text/plain" 200
+                (httpd-send-header proc mime-type 200
                                    :Cache-Control
                                    "max-age=60, must-revalidate")))
           (httpd-send-file proc full-file-name req))))

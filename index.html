@@ -98,7 +98,7 @@
             var href = $(el).attr('href');
             // don't refresh the random data:text stylesheets that chrome inserts
             if(href && href.indexOf('data:text') != 0) {
-              $(el).attr('href', $(el).attr('href') + '?' + new Date().getTime());
+              $(el).attr('href', $(el).attr('href') + ((href.indexOf('?') > -1) ? '&' : '?') + new Date().getTime());
             }
           });
         });

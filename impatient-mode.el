@@ -47,6 +47,13 @@
 (defvar impatient-mode-map (make-sparse-keymap)
   "Keymap for impatient-mode.")
 
+(defvar impatient-mode-delayed-update 1
+  "Controls wether updates occur instantly upon keypresses or are delayed")
+
+(make-variable-buffer-local
+ (defvar imp--edit-timer nil
+   "A timer that goes off after 1 second of inactivity"))
+
 (make-variable-buffer-local
  (defvar imp-user-filter #'imp-htmlize-filter
    "Per buffer html-producing function by user."))
@@ -228,28 +235,43 @@ buffer."
 
 (defun imp--on-change (&rest args)
   "Hook for after-change-functions."
+  (if impatient-mode-delayed-update
+      (progn
+	(if imp--edit-timer
+	    (cancel-timer imp--edit-timer))
+	(setq imp--edit-timer (run-at-time
+			       "1 sec"
+			       nil
+			       'imp--update-pages
+			       args)))
+    (imp--update-pages args)))
+
+(defun imp--update-pages (&rest args)
+  "Does the actual work of updating the buffers in the browser"
   (cl-incf imp-last-state)
 
   ;; notify our clients
   (imp--notify-clients)
-
   ;; notify any clients that we're in the imp-related-files list for
   (let ((buffer-file (buffer-file-name (current-buffer))))
     (dolist (buffer (imp--buffer-list))
       (with-current-buffer buffer
-        (when (member buffer-file imp-related-files)
-          (imp--notify-clients))))))
+	(when (member buffer-file imp-related-files)
+	  (imp--notify-clients)))))
+  (setq imp--edit-timer nil))
+
+
 
 (defun httpd/imp/buffer (proc path query &rest args)
   "Servlet that accepts long poll requests."
   (let* ((buffer-name (file-name-nondirectory path))
-         (buffer (get-buffer buffer-name))
-         (req-last-id (string-to-number (or (cadr (assoc "id" query)) "0"))))
+	 (buffer (get-buffer buffer-name))
+	 (req-last-id (string-to-number (or (cadr (assoc "id" query)) "0"))))
     (if (imp-buffer-enabled-p buffer)
-        (with-current-buffer buffer
-          (if (equal req-last-id imp-last-state)
-              (push proc imp-client-list)         ; this client is sync'd
-            (imp--send-state-ignore-errors proc))) ; this client is behind
+	(with-current-buffer buffer
+	  (if (equal req-last-id imp-last-state)
+	      (push proc imp-client-list)         ; this client is sync'd
+	    (imp--send-state-ignore-errors proc))) ; this client is behind
       (imp--private proc buffer-name))))
 
 (provide 'impatient-mode)

@@ -74,11 +74,11 @@
       };
 
       var refresh = function() {
-        var url = "/imp/buffer/" + buffer;
+        var url = '/imp/buffer/' + buffer;
 
         var gotData = function(data, status, xhr) {
           resetTimeout();
-          setIframe(xhr.getResponseHeader("X-Imp-Count"), data);
+          setIframe(xhr.getResponseHeader('X-Imp-Count'), data);
           refresh();
         };
 

@@ -71,7 +71,8 @@
 
 (defvar imp-default-user-filters
   '((html-mode . nil)
-    (web-mode  . nil))
+    (web-mode  . nil)
+    (markdown-mode . imp-md2html))
   "Alist indicating which filter should be used for which modes.")
 
 ;;;###autoload
@@ -310,6 +311,19 @@ If given a prefix argument, visit the buffer listing instead."
               (push proc imp-client-list)         ; this client is sync'd
             (imp--send-state-ignore-errors proc))) ; this client is behind
       (imp--private proc buffer-name))))
+
+(defun imp-md2html (buffer)
+  (princ (with-current-buffer buffer
+           (format "<!DOCTYPE html><html><head>
+<script src=\"https://cdnjs.cloudflare.com/ajax/libs/marked/0.5.0/marked.min.js\"></script>
+<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css\">
+</head><body>
+<div id=\"marked\" class=\"markdown-body\"></div>
+<div id=\"buffer\" style=\"display:none;\">%s</div>
+<script>document.getElementById('marked').innerHTML = marked(document.getElementById('buffer').textContent);</script>
+</body></html>"
+		   (buffer-substring-no-properties (point-min) (point-max))))
+         (current-buffer)))
 
 (provide 'impatient-mode)
 

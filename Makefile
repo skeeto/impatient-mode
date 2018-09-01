@@ -8,7 +8,7 @@
 .SUFFIXES: .el .elc
 EMACS   = emacs
 LDFLAGS = -L ../simple-httpd -L ../htmlize
-VERSION = 1.0.0
+VERSION = 1.1
 
 DIST = README.md loading.html jquery.js index.html
 

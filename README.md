@@ -1,7 +1,7 @@
 Impatient Mode
 ==============
 
-See the effect of your HTML as you type it.
+See the effect of your HTML, markdown, other Text,  as you type it.
 
  * [YouTube demo](http://youtu.be/QV6XVyXjBO8)
 
@@ -89,9 +89,19 @@ You can remove user filters with `imp-remove-user-filter`, which will reset the 
     (kill-buffer html-buffer)))
 ```
 
+For markdown, no special configuration is required.
+See function `imp-md2html`
+
 Security implications
 ---------------------
 
 Please be aware that enabling `impatient-mode` exposes the whole directory in which the file resides, not only the file itself. If our file is accessible under `http://localhost:8080/imp/live/example.txt/`, it is possible to access `http://localhost:8080/imp/live/example.txt/a-file-in-the-same-directory/or-even/a-subdirectory-of-it.txt`. It's especially dangerous when enabling `impatient-mode` for files like `~/.bashrc` because it allows to access any file in the user's home directory files such as `~/.ssh/id_rsa`.
 
 This behavior is not a bug, it is needed for the HTML files to work properly along with their resources (such as CSS and JS). Please be aware of what is exposed and/or configure your filewall accordingly.
+
+Bundled and distributed projects
+-----------------------------------------
+
+ * [jQuery](https://jquery.com/) (MIT or GPL Version 2 licenses)
+ * [Marked](https://github.com/markedjs/marked) (MIT License)
+ * [github-markdown-css](https://github.com/sindresorhus/github-markdown-css) (MIT License)

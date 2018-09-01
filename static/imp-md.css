@@ -1,0 +1,9 @@
+#marked {
+    box-sizing: border-box;
+    min-width: 200px;
+    max-width: 980px;
+    margin: 1em;
+    padding: 45px;
+    border: 1px solid #d1d5da;
+    border-radius: 3px;
+}

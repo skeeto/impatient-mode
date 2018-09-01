@@ -156,7 +156,7 @@ If given a prefix argument, visit the buffer listing instead."
 
 (defun httpd/imp/static (proc path _query req)
   "Serve up static files."
-  (let* ((file (file-name-nondirectory path))
+  (let* ((file (substring path 5))
          (clean (expand-file-name file imp-shim-root)))
     (if (file-exists-p clean)
         (httpd-send-file proc clean req)
@@ -315,14 +315,15 @@ If given a prefix argument, visit the buffer listing instead."
 (defun imp-md2html (buffer)
   (princ (with-current-buffer buffer
            (format "<!DOCTYPE html><html><head>
-<script src=\"https://cdnjs.cloudflare.com/ajax/libs/marked/0.5.0/marked.min.js\"></script>
-<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css\">
+<script src=\"/imp/static/marked.min.js\"></script>
+<link rel=\"stylesheet\" href=\"/imp/static/github-markdown.min.css\">
+<link rel=\"stylesheet\" href=\"/imp/static/imp-md.css\">
 </head><body>
 <div id=\"marked\" class=\"markdown-body\"></div>
 <div id=\"buffer\" style=\"display:none;\">%s</div>
 <script>document.getElementById('marked').innerHTML = marked(document.getElementById('buffer').textContent);</script>
 </body></html>"
-		   (buffer-substring-no-properties (point-min) (point-max))))
+                   (buffer-substring-no-properties (point-min) (point-max))))
          (current-buffer)))
 
 (provide 'impatient-mode)

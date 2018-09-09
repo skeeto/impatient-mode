@@ -5,7 +5,7 @@
 ;; Author: Brian Taylor <el.wubo@gmail.com>
 ;; Version: 1.1
 ;; URL: https://github.com/netguy204/imp.el
-;; Package-Requires: ((cl-lib "0.3") (simple-httpd "1.4.0") (htmlize "1.40"))
+;; Package-Requires: ((simple-httpd "1.4.0") (htmlize "1.40"))
 
 ;;; Commentary:
 
@@ -35,7 +35,6 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'url-util)
 (require 'simple-httpd)
 (require 'htmlize)
@@ -98,7 +97,7 @@ and will be evaluated with the output buffer set as the current
 buffer."
   (interactive "aCustom filter: ")
   (setq imp-user-filter function)
-  (cl-incf imp-last-state)
+  (setq imp-last-state (1+ imp-last-state))
   (imp--notify-clients))
 
 (defun imp-remove-user-filter ()
@@ -108,7 +107,7 @@ buffer."
     (if lookup
         (imp-set-user-filter (cdr lookup))
       (kill-local-variable 'imp-user-filter)))
-  (cl-incf imp-last-state)
+  (setq imp-last-state (1+ imp-last-state))
   (imp--notify-clients))
 
 (defun imp-htmlize-filter (buffer)
@@ -141,9 +140,16 @@ If given a prefix argument, visit the buffer listing instead."
   "Return t if buffer has impatient-mode enabled."
   (and buffer (with-current-buffer (get-buffer buffer) impatient-mode)))
 
+(defun imp--remove-if-not (func buffers result)
+  (if (null buffers)
+      result
+    (if (funcall func (car buffers))
+        (setq result (cons (car buffers) result)))
+    (imp--remove-if-not func (cdr buffers) result)))
+
 (defun imp--buffer-list ()
   "List of all buffers with impatient-mode enabled"
-  (cl-remove-if-not 'imp-buffer-enabled-p (buffer-list)))
+  (imp--remove-if-not #'imp-buffer-enabled-p (buffer-list) nil))
 
 (defun imp--should-not-cache-p (path)
   "True if the path should be stamped with a no-cache header"
@@ -196,14 +202,14 @@ If given a prefix argument, visit the buffer listing instead."
      ((and (not (string= file "./")) buffer-dir)
       (let* ((full-file-name (expand-file-name file buffer-dir))
              (mime-type (httpd-get-mime (file-name-extension full-file-name)))
-             (live-buffer (cl-remove-if-not
+             (live-buffer (imp--remove-if-not
                            (lambda (buf) (equal full-file-name (buffer-file-name buf)))
-                           (imp--buffer-list))))
+                           (imp--buffer-list) nil)))
         (with-current-buffer buffer-name
           (add-to-list 'imp-related-files full-file-name))
         (if live-buffer
             (with-temp-buffer
-              (insert-buffer-substring (cl-first live-buffer))
+              (insert-buffer-substring (car live-buffer))
               (if (imp--should-not-cache-p path)
                   (httpd-send-header proc mime-type 200
                                      :Cache-Control "no-cache")
@@ -287,7 +293,7 @@ If given a prefix argument, visit the buffer listing instead."
 (defun imp--update-buffer ()
   "Update this buffer in the browser."
   (setf imp--buffer-dirty-p nil)
-  (cl-incf imp-last-state)
+  (setq imp-last-state (1+ imp-last-state))
   ;; notify our clients
   (imp--notify-clients)
   ;; notify any clients that we're in the `imp-related-files' list for

@@ -76,7 +76,7 @@ The original editing buffer is passed along the user filter as a parameter, whic
   (let ((count 
      (with-current-buffer buffer
            (count-words-region (point-min) (point-max)))))
-    (princ (format  "<html><body>%d</body></html>" count) (current-buffer))))
+    (princ (format "<html><body>%d</body></html>" count) (current-buffer))))
 ```
 
 You can remove user filters with `imp-remove-user-filter`, which will reset the default `htmlize`. For reference, this is how the default user function is defined:
@@ -85,7 +85,7 @@ You can remove user filters with `imp-remove-user-filter`, which will reset the 
 (defun default-user-filter (buffer)
   "Htmlization of buffers before sending to clients."
   (let ((html-buffer (save-match-data (htmlize-buffer buffer))))
-    (insert-buffer-substring html-buffer)
+    (princ (with-current-buffer html-buffer (buffer-string)))
     (kill-buffer html-buffer)))
 ```
 

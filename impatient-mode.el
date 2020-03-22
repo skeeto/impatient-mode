@@ -115,7 +115,7 @@ buffer."
 (defun imp-htmlize-filter (buffer)
   "Htmlization of buffers before sending to clients."
   (let ((html-buffer (save-match-data (htmlize-buffer buffer))))
-    (insert-buffer-substring html-buffer)
+    (princ (with-current-buffer html-buffer (buffer-string)))
     (kill-buffer html-buffer)))
 
 (defun imp-toggle-htmlize ()
@@ -226,12 +226,13 @@ If given a prefix argument, visit the buffer listing instead."
         (user-filter imp-user-filter)
         (buffer (current-buffer)))
     (with-temp-buffer
-      (if user-filter
-          (funcall user-filter buffer)
-        (insert-buffer-substring buffer))
-      (httpd-send-header proc "text/html" 200
-                         :Cache-Control "no-cache"
-                         :X-Imp-Count id))))
+      (let ((standard-output (current-buffer)))
+        (if user-filter
+            (funcall user-filter buffer)
+          (insert-buffer-substring buffer))
+        (httpd-send-header proc "text/html" 200
+                           :Cache-Control "no-cache"
+                           :X-Imp-Count id)))))
 
 (defun imp--send-state-ignore-errors (proc)
   (condition-case _

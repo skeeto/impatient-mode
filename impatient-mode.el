@@ -136,7 +136,7 @@ If given a prefix ARG, visit the buffer listing instead."
     (httpd-start))
   (unless impatient-mode
     (impatient-mode))
-  (let ((url (format "http://%s:%d/imp/" (system-name) httpd-port)))
+  (let ((url (format "http://%s:%d/imp/" (or httpd-host (system-name)) httpd-port)))
     (unless arg
       (setq url (format "%slive/%s/" url (url-hexify-string (buffer-name)))))
     (browse-url url)))

@@ -175,8 +175,10 @@ If given a prefix ARG, visit the buffer listing instead."
 (defun imp-serve-buffer-list (proc)
   "Serve a list of published buffers."
   (with-httpd-buffer proc "text/html; charset=utf-8"
+    (insert "<!DOCTYPE html>\n")
     (insert "<html><head>\n")
     (insert "<title>impatient-mode buffer list</title>\n")
+    (insert "<link rel=\"stylesheet\" href=\"/imp/static/buffer-list.css\">")
     (insert "</head><body>\n")
     (insert "<h1>Public Buffers</h1>\n<hr/>")
     (insert "<ul>\n")

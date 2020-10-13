@@ -1,3 +1,6 @@
+[![MELPA](https://melpa.org/packages/impatient-mode-badge.svg)](https://melpa.org/#/impatient-mode)
+[![MELPA Stable](https://stable.melpa.org/packages/impatient-mode-badge.svg)](https://stable.melpa.org/#/impatient-mode)
+
 Impatient Mode
 ==============
 

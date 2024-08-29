@@ -209,7 +209,7 @@ If given a prefix ARG, visit the buffer listing instead."
      ((not (imp-buffer-enabled-p buffer)) (imp--private proc buffer-name))
      ((and (not (string= file "./")) buffer-dir)
       (let* ((full-file-name (expand-file-name file buffer-dir))
-             (mime-type (httpd-get-mime (file-name-extension full-file-name)))
+             (mime-type (httpd-get-mime (file-name-extension full-file-name) buffer-name))
              (live-buffer (cl-remove-if-not
                            (lambda (buf) (equal full-file-name (buffer-file-name buf)))
                            (imp--buffer-list))))

@@ -1,5 +1,6 @@
 [![MELPA](https://melpa.org/packages/impatient-mode-badge.svg)](https://melpa.org/#/impatient-mode)
 [![MELPA Stable](https://stable.melpa.org/packages/impatient-mode-badge.svg)](https://stable.melpa.org/#/impatient-mode)
+[![CI](https://github.com/skeeto/impatient-mode/actions/workflows/test.yml/badge.svg)](https://github.com/skeeto/impatient-mode/actions/workflows/test.yml)
 
 # Impatient Mode
 

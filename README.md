@@ -1,36 +1,33 @@
-Impatient Mode
-==============
+# Impatient Mode
 
 See the effect of your HTML as you type it.
 
  * [YouTube demo](http://youtu.be/QV6XVyXjBO8)
 
-Installation through MELPA
---------------------------
+## Installation through MELPA
 
-The easiest way to get up and running with _impatient-mode_ is to
+The easiest way to get up and running with `impatient-mode` is to
 install it through [MELPA](https://melpa.org/). If you're not
 already using MELPA,
 [it's quite easy to setup.](https://melpa.org/#/getting-started)
 
-Installation from Source
-------------------------
+## Installation from Source
 
 If you are installing from source, please note that this package
-requires both _simple-httpd_ and _htmlize_ in order to operate. The
-_simple-httpd_ webserver runs within emacs to serve up your buffers as
-you edit them. _htmlize_ is used to send font lock highlighting to
+requires both `simple-httpd` and `htmlize` in order to operate. The
+`simple-httpd` webserver runs within emacs to serve up your buffers as
+you edit them. `htmlize` is used to send font lock highlighting to
 clients for non-HTML buffers.
 
-_simple-httpd_ can be installed through MELPA or directly from GitHub.
+`simple-httpd` can be installed through MELPA or directly from GitHub.
 
- * http://melpa.milkbox.net/
- * https://github.com/skeeto/emacs-http-server
+- http://melpa.milkbox.net/
+- https://github.com/skeeto/emacs-http-server
 
-_htmlize_ is also available through MELPA.
+`htmlize` is also available through MELPA.
 
-Once you have installed _simple-httpd_ and _htmlize_ and you've cloned
-_impatient-mode_, you can add _impatient-mode_ to your load path and
+Once you have installed `simple-httpd` and `htmlize` and you've cloned
+`impatient-mode`, you can add `impatient-mode` to your load path and
 require it:
 
 ```el
@@ -38,10 +35,9 @@ require it:
 (require 'impatient-mode)
 ```
 
-Using _impatient-mode_
-----------------------
+## Using `impatient-mode`
 
-Enable the web server provided by _simple-httpd_:
+Enable the web server provided by `simple-httpd`:
 
 ```el
 M-x httpd-start
@@ -89,8 +85,7 @@ You can remove user filters with `imp-remove-user-filter`, which will reset the 
     (kill-buffer html-buffer)))
 ```
 
-Security implications
----------------------
+## Security implications
 
 Please be aware that enabling `impatient-mode` exposes the whole directory in which the file resides, not only the file itself. If our file is accessible under `http://localhost:8080/imp/live/example.txt/`, it is possible to access `http://localhost:8080/imp/live/example.txt/a-file-in-the-same-directory/or-even/a-subdirectory-of-it.txt`. It's especially dangerous when enabling `impatient-mode` for files like `~/.bashrc` because it allows to access any file in the user's home directory files such as `~/.ssh/id_rsa`.
 

@@ -3,8 +3,10 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Brian Taylor <el.wubo@gmail.com>
+;;         Christopher Wellons <wellons@nullprogram.com>
+;; Maintainer: Jen-Chieh Shen <jcs090218@gmail.com>
 ;; Version: 1.1
-;; URL: https://github.com/netguy204/imp.el
+;; URL: https://github.com/skeeto/impatient-mode
 ;; Package-Requires: ((emacs "24.3") (simple-httpd "1.5.0") (htmlize "1.40"))
 
 ;;; Commentary:

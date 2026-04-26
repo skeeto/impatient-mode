@@ -7,7 +7,7 @@
 ;; Maintainer: Jen-Chieh Shen <jcs090218@gmail.com>
 ;; Version: 1.1
 ;; URL: https://github.com/skeeto/impatient-mode
-;; Package-Requires: ((emacs "24.3") (simple-httpd "1.5.0") (htmlize "1.40"))
+;; Package-Requires: ((emacs "27.1") (simple-httpd "1.5.0") (htmlize "1.40"))
 
 ;;; Commentary:
 

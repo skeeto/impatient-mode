@@ -1,0 +1,8 @@
+/* buffer-list.css */
+
+a {
+    transition: background-color 0.3s;
+}
+a:hover {
+    background-color: salmon;
+}

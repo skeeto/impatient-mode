@@ -33,13 +33,23 @@
 </iframe>
 
 <script type="text/javascript">
-var buffer = window.location.pathname.split('/')[3];
+
+var parseBufferName = function(path) {
+  const re = /^\/imp\/\w+\/(.*)\/$/;
+  var match = re.exec(path);
+  if (!match || !match[1])
+     return null;
+
+  return decodeURIComponent(match[1]);
+};
+
+var buffer = parseBufferName(window.location.pathname);
 var max_period = 60000;
 var min_period = 1000;
 var next_period = min_period;
 var alpha = 1.2;
 var current_id = '-1';
-$('head').append($('<title/>').text(decodeURI(buffer)));
+$('head').append($('<title/>').text(buffer));
 
 var nextTimeout = function() {
   var next = next_period;
@@ -80,7 +90,7 @@ var setIframe = function(count, newText) {
 };
 
 var refresh = function() {
-  var url = "/imp/buffer/" + buffer;
+  var url = "/imp/buffer/" + encodeURIComponent(buffer) + "/";
 
   var gotData = function(data, status, xhr) {
     resetTimeout();

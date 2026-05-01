@@ -166,8 +166,41 @@ If given a prefix ARG, visit the buffer listing instead."
     (member mime-type '("text/css" "text/html" "text/xml"
                         "text/plain" "text/javascript"))))
 
+(defun imp--parse-path (page-path request-path require-trailing-slash)
+  "Parse params string from 'simple-httpd' path parameter.
+
+Given a PAGE-PATH (e.g. \"imp/buffer\"), parse the 'simple-httpd' request's
+REQUEST-PATH and return the rest of the string (or nil).
+
+PAGE-PATH will be padded with slashes if it is not already (e.g.
+\"imp/buffer\" -> \"/imp/buffer/\").
+
+If REQUIRE-TRAILING-SLASH is non-nil, a trailing \"/\" is required in the
+REQUEST-PATH.
+
+Avoid forward-slash-based parsing; that could be our buffer name's slash."
+  ;; Don't think we need `url-unhex-string'? The path that `simple-httpd'
+  ;; returns looks to be already decoded, but just to be safe...
+  (let ((request-path (url-unhex-string request-path)))
+      ;; Ignore & return nil if expected and actual paths don't match.
+    (when (string-match (rx-to-string `(sequence
+                                        string-start
+                                        ,(if (string-prefix-p "/" page-path) "" "/")
+                                        ,page-path
+                                        ,(if (string-suffix-p "/" page-path) "" "/")
+                                        (group
+                                         (zero-or-more anything))
+                                        ,(if require-trailing-slash "/" "")
+                                        string-end)
+                                      t)
+                        request-path)
+      ;; Get interesting part of path from match.
+      (match-string 1 request-path))))
+
 (defun httpd/imp/static (proc path _query req)
   "Serve up static files."
+  ;; Just want a static file from the shim root (no subdirs), so don't need
+  ;; fancier PATH parsing.
   (let* ((file (file-name-nondirectory path))
          (clean (expand-file-name file imp-shim-root)))
     (if (file-exists-p clean)
@@ -197,36 +230,39 @@ If given a prefix ARG, visit the buffer listing instead."
 (defun httpd/imp/live (proc path _query req)
   "Serve up the shim that lets us watch a buffer change."
   (let* ((index (expand-file-name "index.html" imp-shim-root))
-         (decoded (url-unhex-string path))
-         (parts (cdr (split-string decoded "/")))
-         (buffer-name (nth 2 parts))
-         (file (httpd-clean-path (mapconcat 'identity (nthcdr 3 parts) "/")))
+         (decoded-path (url-unhex-string path))
+         (parsed (imp--parse-path "imp/live" decoded-path t))
+         (buffer-name parsed)
+         ;; (file (httpd-clean-path (mapconcat 'identity (nthcdr 3 parts) "/")))
          (buffer (get-buffer buffer-name))
          (buffer-file (buffer-file-name buffer))
          (buffer-dir (and buffer-file (file-name-directory buffer-file))))
-
     (cond
-     ((equal (file-name-directory decoded) "/imp/live/")
-      (httpd-redirect proc (concat decoded "/")))
+     ;; Enforce trailing slash in URL.
+     ((equal (file-name-directory decoded-path) "/imp/live/")
+      (httpd-redirect proc (concat decoded-path "/")))
+     ;; Enforce `impatient-mode' in requested buffer.
      ((not (imp-buffer-enabled-p buffer)) (imp--private proc buffer-name))
-     ((and (not (string= file "./")) buffer-dir)
-      (let* ((full-file-name (expand-file-name file buffer-dir))
-             (mime-type (httpd-get-mime (file-name-extension full-file-name)))
-             (live-buffer (cl-remove-if-not
-                           (lambda (buf) (equal full-file-name (buffer-file-name buf)))
-                           (imp--buffer-list))))
-        (with-current-buffer buffer-name
-          (add-to-list 'imp-related-files full-file-name))
-        (if live-buffer
-            (with-temp-buffer
-              (insert-buffer-substring (cl-first live-buffer))
-              (if (imp--should-not-cache-p decoded)
-                  (httpd-send-header proc mime-type 200
-                                     :Cache-Control "no-cache")
-                (httpd-send-header proc mime-type 200
-                                   :Cache-Control
-                                   "max-age=60, must-revalidate")))
-          (httpd-send-file proc full-file-name req))))
+     ;; TODO: Where/how is this used?!
+     ;; ((and (not (string= file "./")) buffer-dir)
+     ;;  (let* ((full-file-name (expand-file-name file buffer-dir))
+     ;;         (mime-type (httpd-get-mime (file-name-extension full-file-name)))
+     ;;         (live-buffer (cl-remove-if-not
+     ;;                       (lambda (buf) (equal full-file-name (buffer-file-name buf)))
+     ;;                       (imp--buffer-list))))
+     ;;    (with-current-buffer buffer-name
+     ;;      (add-to-list 'imp-related-files full-file-name))
+     ;;    (if live-buffer
+     ;;        (with-temp-buffer
+     ;;          (insert-buffer-substring (cl-first live-buffer))
+     ;;          (if (imp--should-not-cache-p decoded)
+     ;;              (httpd-send-header proc mime-type 200
+     ;;                                 :Cache-Control "no-cache")
+     ;;            (httpd-send-header proc mime-type 200
+     ;;                               :Cache-Control
+     ;;                               "max-age=60, must-revalidate")))
+     ;;      (httpd-send-file proc full-file-name req))))
+     ;; OK; server the "index.html" shim file.
      (t (imp-buffer-enabled-p buffer) (httpd-send-file proc index req)))))
 
 (defun httpd/imp (proc path &rest _)
@@ -316,8 +352,9 @@ If given a prefix ARG, visit the buffer listing instead."
 
 (defun httpd/imp/buffer (proc path query &rest _)
   "Servlet that accepts long poll requests."
-  (let* ((decoded (url-unhex-string path))
-         (buffer-name (file-name-nondirectory decoded))
+  (let* ((decoded-path (url-unhex-string path))
+         (parsed (imp--parse-path "imp/buffer" decoded-path t))
+         (buffer-name parsed)
          (buffer (get-buffer buffer-name))
          (req-last-id (string-to-number (or (cadr (assoc "id" query)) "0"))))
     (if (imp-buffer-enabled-p buffer)

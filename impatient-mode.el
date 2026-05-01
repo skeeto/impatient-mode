@@ -83,7 +83,7 @@ Set to nil for no delay"
 ;;;###autoload
 (define-minor-mode impatient-mode
   "Serves the buffer live over HTTP."
-  :group 'impatient
+  :group 'impatient-mode
   :lighter " imp"
   :keymap impatient-mode-map
   (if (not impatient-mode)
@@ -92,7 +92,16 @@ Set to nil for no delay"
         (remove-hook 'after-change-functions #'imp--on-change t))
     (add-hook 'kill-buffer-hook #'imp--cleanup-timer nil t)
     (add-hook 'after-change-functions #'imp--on-change nil t)
-    (imp-remove-user-filter)))
+    (imp-remove-user-filter)
+    (unless (process-status "httpd") (httpd-start))
+    (let ((url (format "http://%s:%d/imp/live/%s/"
+		       (cl-case httpd-host
+			 ((nil) "0.0.0.0")
+			 ((local) "localhost")
+			 (otherwise httpd-host))
+		       httpd-port
+		       (url-hexify-string (buffer-name)))))
+      (browse-url url))))
 
 (defvar imp-shim-root (file-name-directory load-file-name)
   "Location of data files needed by impatient-mode.")
